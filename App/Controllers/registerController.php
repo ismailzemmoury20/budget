@@ -39,8 +39,8 @@ class registerController
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'ismail.zamouri3@gmail.com';
-            $mail->Password   = 'bvoh kely qtle qozr';
+            $mail->Username   = $_ENV['DB_USERNAME'];
+            $mail->Password   = $_ENV['DB_PASSWORD'];
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
