@@ -1,0 +1,111 @@
+.deconnexion-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 64px);
+    padding: 40px 24px;
+}
+
+.deconnexion-card {
+    background-color: var(--bg-card);
+    border: 1px solid rgba(144, 138, 255, 0.35);
+    border-radius: 16px;
+    padding: 48px 40px;
+    max-width: 440px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(108, 99, 255, 0.15);
+}
+
+.deconnexion-icon {
+    width: 72px;
+    height: 72px;
+    background-color: rgba(108, 99, 255, 0.12);
+    border: 1px solid rgba(108, 99, 255, 0.3);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.deconnexion-icon i {
+    font-size: 2rem;
+    color: var(--accent1);
+}
+
+.deconnexion-card h2 {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.deconnexion-card p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+}
+
+.deconnexion-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.deconnexion-actions form {
+    width: 100%;
+}
+
+.btn-logout {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Fira Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+}
+
+.btn-logout:hover {
+    opacity: 0.85;
+}
+
+.btn-cancel {
+    width: 100%;
+    padding: 12px;
+    background-color: transparent;
+    color: var(--text-muted);
+    border: 1px solid rgba(144, 138, 255, 0.35);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    font-family: 'Fira Sans', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
