@@ -4,6 +4,8 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql \
+    && a2dismod mpm_event \
+    && a2enmod mpm_prefork rewrite
 
 EXPOSE 80
