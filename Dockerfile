@@ -1,12 +1,24 @@
-FROM php:8.2-apache
+FROM php:8.2-fpm-alpine
 
-WORKDIR /var/www/html
+RUN apk add --no-cache nginx \
+    && docker-php-ext-install pdo pdo_mysql
 
-COPY . .
+COPY . /var/www/html/
 
-RUN docker-php-ext-install pdo pdo_mysql \
-    && a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork rewrite \
-    && sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g' /etc/apache2/sites-enabled/000-default.conf
+RUN echo 'server {
+    listen 80;
+    root /var/www/html/public;
+    index index.php;
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}' > /etc/nginx/http.d/default.conf
 
 EXPOSE 80
+
+CMD php-fpm -D && nginx -g "daemon off;"
