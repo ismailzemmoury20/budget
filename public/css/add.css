@@ -1,0 +1,270 @@
+/* ── Add Transaction Page ── */
+
+.transaction-container {
+    max-width: 680px;
+    margin: 32px auto;
+    padding: 36px 40px;
+    background-color: var(--bg-card);
+    border: 1px solid rgba(144, 138, 255, 0.35);
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(108, 99, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ── Header ── */
+.title h2 {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+}
+
+.title p {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* ── Alerts ── */
+.alert {
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    padding: 12px 16px;
+    border: none;
+}
+
+.alert-success {
+    background-color: rgba(0, 200, 150, 0.12);
+    color: #00c896;
+    border: 1px solid rgba(0, 200, 150, 0.25);
+}
+
+.alert-danger {
+    background-color: rgba(255, 77, 109, 0.12);
+    color: #ff4d6d;
+    border: 1px solid rgba(255, 77, 109, 0.25);
+}
+
+/* ── Form layout ── */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+/* ── Section labels ── */
+.bouton-transactions > p,
+.montant > p,
+.description > p,
+.category > p,
+.date > p,
+.notes > p {
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 10px;
+}
+
+/* ── Type toggle ── */
+.bouton-transactions {
+    display: flex;
+    flex-direction: column;
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.buttons .btn {
+    padding: 11px 0;
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    background-color: var(--bg-dark);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+#btn-revenu:hover,
+#btn-revenu.active {
+    background-color: rgba(108, 99, 255, 0.15);
+    border-color: var(--accent);
+    color: var(--accent1);
+}
+
+#btn-depense:hover,
+#btn-depense.active {
+    background-color: rgba(255, 77, 109, 0.12);
+    border-color: #ff4d6d;
+    color: #ff4d6d;
+}
+
+/* ── Inputs ── */
+.montant,
+.description,
+.notes {
+    display: flex;
+    flex-direction: column;
+}
+
+.montant input,
+.description input,
+.notes textarea {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.montant input {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.montant input::placeholder,
+.description input::placeholder,
+.notes textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.montant input:focus,
+.description input:focus,
+.notes textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+}
+
+.notes textarea {
+    resize: vertical;
+    min-height: 96px;
+}
+
+/* ── Category + Date row ── */
+.category-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.category,
+.date {
+    display: flex;
+    flex-direction: column;
+}
+
+.category select,
+.date input {
+    width: 100%;
+    padding: 11px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.category select:focus,
+.date input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+}
+
+.category select option {
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+}
+
+/* ── Submit ── */
+.submit {
+    width: 100%;
+    padding: 13px;
+    background-color: var(--accent);
+    color: #fff;
+    font-family: 'Fira Sans', sans-serif;
+    font-size: 0.97rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+}
+
+.submit:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+    background-color: var(--accent);
+    color: #fff;
+}
+
+.submit:active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .transaction-container {
+        margin: 16px;
+        padding: 24px 20px;
+        gap: 20px;
+    }
+
+    .category-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .buttons {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .title h2 {
+        font-size: 1.2rem;
+    }
+
+    .submit {
+        padding: 12px;
+        font-size: 0.92rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .transaction-container {
+        margin: 8px;
+        padding: 20px 16px;
+    }
+}

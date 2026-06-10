@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget — Gérez vos finances simplement</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════
+           TOKENS
+        ══════════════════════════════════════ */
+        :root {
+            --accent:        #6c63ff;
+            --accent1:       #908aff;
+            --accent-glow:   rgba(108, 99, 255, 0.25);
+            --green:         #00c896;
+            --red:           #ff4d6d;
+            --transition:    0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg:            #0f1117;
+            --bg-card:       #1a1d27;
+            --bg-nav:        rgba(15, 17, 23, 0.85);
+            --border:        #2a2d3e;
+            --text:          #e8eaf0;
+            --text-muted:    #6b7280;
+            --text-soft:     #9ca3af;
+            --hero-sub:      rgba(232, 234, 240, 0.65);
+            --card-hover:    #1e2130;
+            --badge-bg:      rgba(108, 99, 255, 0.12);
+            --badge-border:  rgba(108, 99, 255, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg:            #f4f5fb;
+            --bg-card:       #ffffff;
+            --bg-nav:        rgba(244, 245, 251, 0.88);
+            --border:        #e2e4f0;
+            --text:          #1a1d27;
+            --text-muted:    #6b7280;
+            --text-soft:     #8b92a5;
+            --hero-sub:      rgba(26, 29, 39, 0.65);
+            --card-hover:    #f8f9ff;
+            --badge-bg:      rgba(108, 99, 255, 0.08);
+            --badge-border:  rgba(108, 99, 255, 0.2);
+        }
+
+        /* ══════════════════════════════════════
+           RESET & BASE
+        ══════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color var(--transition), color var(--transition);
+        }
+
+        /* ══════════════════════════════════════
+           NAV
+        ══════════════════════════════════════ */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background-color: var(--bg-nav);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 0 40px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color var(--transition), border-color var(--transition);
+        }
+
+        .nav-logo {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .nav-logo i { color: var(--accent); font-size: 1.3rem; }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--accent); }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+        .nav-cta {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 18px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: 'Fira Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .nav-cta:hover { opacity: 0.85; }
+
+        /* Hamburger mobile */
+        .nav-hamburger {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .nav-hamburger span {
+            display: block;
+            width: 22px;
+            height: 2px;
+            background: var(--text);
+            border-radius: 2px;
+            transition: all 0.25s;
+        }
+
+        /* ══════════════════════════════════════
+           HERO
+        ══════════════════════════════════════ */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 100px 24px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background glow blobs */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.18) 0%, transparent 70%);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(0, 200, 150, 0.1) 0%, transparent 70%);
+            bottom: 0;
+            right: -100px;
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--accent1);
+            font-family: 'Fira Sans', sans-serif;
+            letter-spacing: 0.5px;
+            margin-bottom: 28px;
+        }
+        .hero-badge i { font-size: 0.9rem; }
+
+        .hero h1 {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: clamp(2.6rem, 6vw, 4.2rem);
+            font-weight: 900;
+            line-height: 1.1;
+            color: var(--text);
+            max-width: 760px;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent1) 50%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            color: var(--hero-sub);
+            max-width: 520px;
+            margin-bottom: 40px;
+            line-height: 1.75;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 64px;
+        }
+
+        .btn-primary {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 14px 28px;
+            font-size: 0.97rem;
+            font-weight: 700;
+            font-family: 'Fira Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.15s;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.35);
+        }
+        .btn-primary:hover { opacity: 0.88; transform: translateY(-2px); }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 28px;
+            font-size: 0.97rem;
+            font-weight: 600;
+            font-family: 'Fira Sans', sans-serif;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Stats band */
+        .hero-stats {
+            display: flex;
+            gap: 48px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-value {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-divider {
+            width: 1px;
+            background: var(--border);
+            align-self: stretch;
+        }
+
+        /* ══════════════════════════════════════
+           SECTION COMMONS
+        ══════════════════════════════════════ */
+        section {
+            padding: 96px 24px;
+        }
+
+        .section-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-label {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .section-sub {
+            font-size: 0.95rem;
+            color: var(--text-soft);
+            max-width: 480px;
+            line-height: 1.7;
+        }
+
+        /* ══════════════════════════════════════
+           FEATURES
+        ══════════════════════════════════════ */
+        .features { background: var(--bg); }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .features-header .section-sub { margin: 0 auto; }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: all 0.25s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--accent1));
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(108, 99, 255, 0.3);
+            background: var(--card-hover);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(108, 99, 255, 0.12);
+        }
+        .feature-card:hover::before { opacity: 1; }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--badge-bg);
+            border: 1px solid var(--badge-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: var(--accent1);
+        }
+
+        .feature-title {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .feature-desc {
+            font-size: 0.875rem;
+            color: var(--text-soft);
+            line-height: 1.65;
+        }
+
+        /* ══════════════════════════════════════
+           HOW IT WORKS
+        ══════════════════════════════════════ */
+        .how {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .how-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .how-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 32px;
+            margin-top: 32px;
+        }
+
+        .step {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent1));
+            color: #fff;
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+        }
+
+        .step-content h4 {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 0.97rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .step-content p {
+            font-size: 0.85rem;
+            color: var(--text-soft);
+            line-height: 1.6;
+        }
+
+        /* App preview card */
+        .app-preview {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+        }
+
+        .preview-topbar {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .preview-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+        }
+        .preview-dot:nth-child(1) { background: #ff5f57; }
+        .preview-dot:nth-child(2) { background: #febc2e; }
+        .preview-dot:nth-child(3) { background: #28c840; }
+
+        .preview-body { padding: 20px; }
+
+        .preview-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .preview-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+        [data-theme="light"] .preview-card { background: #f8f9ff; }
+
+        .preview-card-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .preview-card-val {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .preview-card-val.green { color: var(--green); }
+        .preview-card-val.red   { color: var(--red); }
+
+        .preview-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px;
+        }
+        [data-theme="light"] .preview-bar { background: #f8f9ff; }
+
+        .preview-bar-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .preview-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-name {
+            font-size: 0.7rem;
+            color: var(--text-soft);
+            width: 70px;
+            flex-shrink: 0;
+        }
+
+        .bar-track {
+            flex: 1;
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent1));
+        }
+
+        .bar-fill.green { background: var(--green); }
+        .bar-fill.red   { background: var(--red); }
+
+        .bar-pct {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 28px;
+            text-align: right;
+        }
+
+        /* ══════════════════════════════════════
+           CATEGORIES SECTION
+        ══════════════════════════════════════ */
+        .categories-section { background: var(--bg); }
+
+        .cat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 48px;
+        }
+
+        .cat-pill {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            transition: all 0.2s;
+        }
+
+        .cat-pill:hover {
+            border-color: rgba(108, 99, 255, 0.3);
+            transform: translateX(4px);
+        }
+
+        .cat-pill-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .cat-pill-icon.purple {
+            background: rgba(108, 99, 255, 0.12);
+            color: var(--accent1);
+        }
+        .cat-pill-icon.green {
+            background: rgba(0, 200, 150, 0.12);
+            color: var(--green);
+        }
+        .cat-pill-icon.red {
+            background: rgba(255, 77, 109, 0.12);
+            color: var(--red);
+        }
+        .cat-pill-icon.orange {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+        }
+
+        .cat-pill-info h4 {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 2px;
+        }
+
+        .cat-pill-info p {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .cat-pill-amount {
+            margin-left: auto;
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        /* ══════════════════════════════════════
+           CTA
+        ══════════════════════════════════════ */
+        .cta {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.15) 0%, rgba(144, 138, 255, 0.08) 100%);
+            border: 1px solid rgba(108, 99, 255, 0.25);
+            border-radius: 20px;
+            padding: 64px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(108, 99, 255, 0.15) 0%, transparent 70%);
+            top: -100px; left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .cta-box h2 {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 14px;
+        }
+
+        .cta-box p {
+            font-size: 0.95rem;
+            color: var(--text-soft);
+            margin-bottom: 36px;
+            max-width: 420px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* ══════════════════════════════════════
+           FOOTER
+        ══════════════════════════════════════ */
+        footer {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            padding: 32px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-logo {
+            font-family: 'Fira Sans', sans-serif;
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: 2px;
+        }
+
+        .footer-copy {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .footer-links a {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--accent); }
+
+        /* ══════════════════════════════════════
+           RESPONSIVE
+        ══════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .how-inner {
+                grid-template-columns: 1fr;
+                gap: 48px;
+            }
+            .preview-cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+
+            .nav-links { display: none; }
+
+            .nav-hamburger { display: flex; }
+
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: fixed;
+                top: 64px; left: 0; right: 0;
+                background: var(--bg-card);
+                border-bottom: 1px solid var(--border);
+                padding: 20px 24px;
+                gap: 16px;
+            }
+
+            .hero { padding: 100px 20px 64px; }
+
+            .hero-stats { gap: 24px; }
+            .stat-divider { display: none; }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            section { padding: 64px 20px; }
+
+            .cat-grid { grid-template-columns: 1fr; }
+
+            .cta-box { padding: 40px 24px; }
+
+            .hero-actions { flex-direction: column; align-items: center; }
+            .btn-primary, .btn-outline { width: 100%; justify-content: center; }
+
+            footer {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 24px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .preview-cards { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══ NAV ═══ -->
+    <nav>
+        <a href="#" class="nav-logo">
+            <i class="ri-line-chart-fill"></i> BUDGET
+        </a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#features">Fonctionnalités</a></li>
+            <li><a href="#how">Comment ça marche</a></li>
+            <li><a href="#categories">Catégories</a></li>
+        </ul>
+        <div class="nav-right">
+            <button class="theme-toggle" id="themeToggle" aria-label="Changer le thème">
+                <i class="ri-moon-line" id="themeIcon"></i>
+            </button>
+            <a href="public/index.php" class="nav-cta">Accéder à l'app</a>
+            <button class="nav-hamburger" id="navToggle" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ═══ HERO ═══ -->
+    <section class="hero">
+        <div class="hero-badge">
+            <i class="ri-sparkling-2-line"></i> Gestion financière personnelle
+        </div>
+        <h1>Prenez le contrôle de<br><span>vos finances</span></h1>
+        <p>Suivez vos revenus, maîtrisez vos dépenses et visualisez votre patrimoine — tout en un seul endroit, propre et intuitif.</p>
+        <div class="hero-actions">
+            <a href="public/index.php" class="btn-primary">
+                <i class="ri-rocket-line"></i> Commencer maintenant
+            </a>
+            <a href="#features" class="btn-outline">
+                <i class="ri-play-circle-line"></i> Voir les fonctionnalités
+            </a>
+        </div>
+        <div class="hero-stats">
+            <div class="stat-item">
+                <span class="stat-value">100%</span>
+                <span class="stat-label">Gratuit</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value">∞</span>
+                <span class="stat-label">Transactions</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-value">🔒</span>
+                <span class="stat-label">Données privées</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FEATURES ═══ -->
+    <section class="features" id="features">
+        <div class="section-inner">
+            <div class="features-header">
+                <p class="section-label">Fonctionnalités</p>
+                <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+                <p class="section-sub">Un outil simple et puissant pour garder un œil sur chaque euro.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-add-circle-line"></i></div>
+                    <h3 class="feature-title">Ajout rapide de transactions</h3>
+                    <p class="feature-desc">Enregistrez un revenu ou une dépense en quelques secondes avec description, catégorie et date.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-pie-chart-2-line"></i></div>
+                    <h3 class="feature-title">Catégories personnalisables</h3>
+                    <p class="feature-desc">Créez, modifiez et supprimez vos catégories pour organiser votre budget selon vos habitudes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-bar-chart-box-line"></i></div>
+                    <h3 class="feature-title">Tableau de bord visuel</h3>
+                    <p class="feature-desc">Visualisez votre solde, vos revenus totaux et vos dépenses sur un tableau de bord clair.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-shield-check-line"></i></div>
+                    <h3 class="feature-title">Accès sécurisé</h3>
+                    <p class="feature-desc">Vos données restent privées grâce à un système d'authentification par identifiant et mot de passe.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-search-2-line"></i></div>
+                    <h3 class="feature-title">Suivi par type</h3>
+                    <p class="feature-desc">Distinguez facilement revenus et dépenses grâce à un système de badges visuels colorés.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-device-line"></i></div>
+                    <h3 class="feature-title">Design responsive</h3>
+                    <p class="feature-desc">Consultez votre budget depuis n'importe quel appareil — ordinateur, tablette ou smartphone.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="ri-file-excel-2-line"></i></div>
+                    <h3 class="feature-title">Export CSV</h3>
+                    <p class="feature-desc">Téléchargez l'ensemble de vos transactions en un clic au format CSV, directement exploitable dans Excel ou Google Sheets.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ HOW IT WORKS ═══ -->
+    <section class="how" id="how">
+        <div class="section-inner how-inner">
+            <!-- Left: steps -->
+            <div>
+                <p class="section-label">Comment ça marche</p>
+                <h2 class="section-title">Opérationnel en 3 étapes</h2>
+                <p class="section-sub">Pas de complexité inutile. Commencez à suivre vos finances en moins d'une minute.</p>
+                <div class="how-steps">
+                    <div class="step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <h4>Créez votre compte</h4>
+                            <p>Inscrivez-vous avec un identifiant et un mot de passe. Vos données vous appartiennent.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <h4>Configurez vos catégories</h4>
+                            <p>Ajoutez vos catégories de revenus et de dépenses selon votre style de vie.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <h4>Enregistrez vos transactions</h4>
+                            <p>Ajoutez chaque mouvement financier et consultez votre tableau de bord en temps réel.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Right: app preview -->
+            <div class="app-preview">
+                <div class="preview-topbar">
+                    <div class="preview-dot"></div>
+                    <div class="preview-dot"></div>
+                    <div class="preview-dot"></div>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-cards">
+                        <div class="preview-card">
+                            <div class="preview-card-label">Solde</div>
+                            <div class="preview-card-val">3 240 €</div>
+                        </div>
+                        <div class="preview-card">
+                            <div class="preview-card-label">Revenus</div>
+                            <div class="preview-card-val green">+4 800 €</div>
+                        </div>
+                        <div class="preview-card">
+                            <div class="preview-card-label">Dépenses</div>
+                            <div class="preview-card-val red">−1 560 €</div>
+                        </div>
+                    </div>
+                    <div class="preview-bar">
+                        <div class="preview-bar-label">Répartition par catégorie</div>
+                        <div class="preview-bars">
+                            <div class="bar-row">
+                                <span class="bar-name">Alimentation</span>
+                                <div class="bar-track"><div class="bar-fill red" style="width:72%"></div></div>
+                                <span class="bar-pct">72%</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-name">Transport</span>
+                                <div class="bar-track"><div class="bar-fill" style="width:45%"></div></div>
+                                <span class="bar-pct">45%</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-name">Salaire</span>
+                                <div class="bar-track"><div class="bar-fill green" style="width:88%"></div></div>
+                                <span class="bar-pct">88%</span>
+                            </div>
+                            <div class="bar-row">
+                                <span class="bar-name">Freelance</span>
+                                <div class="bar-track"><div class="bar-fill green" style="width:32%"></div></div>
+                                <span class="bar-pct">32%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CATEGORIES ═══ -->
+    <section class="categories-section" id="categories">
+        <div class="section-inner">
+            <p class="section-label">Organisation</p>
+            <h2 class="section-title">Vos catégories, votre façon</h2>
+            <p class="section-sub">Créez autant de catégories que vous le souhaitez, en revenus ou en dépenses.</p>
+            <div class="cat-grid">
+                <div class="cat-pill">
+                    <div class="cat-pill-icon green"><i class="ri-briefcase-line"></i></div>
+                    <div class="cat-pill-info">
+                        <h4>Salaire</h4>
+                        <p>Revenu mensuel</p>
+                    </div>
+                    <span class="cat-pill-amount" style="color:var(--green)">+2 400 €</span>
+                </div>
+                <div class="cat-pill">
+                    <div class="cat-pill-icon red"><i class="ri-shopping-cart-line"></i></div>
+                    <div class="cat-pill-info">
+                        <h4>Courses</h4>
+                        <p>Dépense mensuelle</p>
+                    </div>
+                    <span class="cat-pill-amount" style="color:var(--red)">−320 €</span>
+                </div>
+                <div class="cat-pill">
+                    <div class="cat-pill-icon purple"><i class="ri-code-s-slash-line"></i></div>
+                    <div class="cat-pill-info">
+                        <h4>Freelance</h4>
+                        <p>Revenu variable</p>
+                    </div>
+                    <span class="cat-pill-amount" style="color:var(--green)">+800 €</span>
+                </div>
+                <div class="cat-pill">
+                    <div class="cat-pill-icon orange"><i class="ri-car-line"></i></div>
+                    <div class="cat-pill-info">
+                        <h4>Transport</h4>
+                        <p>Dépense mensuelle</p>
+                    </div>
+                    <span class="cat-pill-amount" style="color:var(--red)">−95 €</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CTA ═══ -->
+    <section class="cta">
+        <div class="section-inner">
+            <div class="cta-box">
+                <h2>Prêt à maîtriser votre budget ?</h2>
+                <p>Rejoignez l'application et commencez à suivre vos finances dès aujourd'hui. C'est gratuit.</p>
+                <a href="public/index.php" class="btn-primary">
+                    <i class="ri-rocket-line"></i> Accéder à l'application
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer>
+        <span class="footer-logo">BUDGET</span>
+        <span class="footer-copy">Budget Personnel &copy; 2026 — Tous droits réservés</span>
+        <ul class="footer-links">
+            <li><a href="#features">Fonctionnalités</a></li>
+            <li><a href="#how">Comment ça marche</a></li>
+            <li><a href="public/index.php">Application</a></li>
+        </ul>
+    </footer>
+
+    <script>
+        // ── Theme toggle ──
+        const html       = document.documentElement;
+        const icon       = document.getElementById('themeIcon');
+        const savedTheme = localStorage.getItem('budget-theme') || 'dark';
+
+        function applyTheme(theme) {
+            html.setAttribute('data-theme', theme);
+            icon.className = theme === 'dark' ? 'ri-sun-line' : 'ri-moon-line';
+            localStorage.setItem('budget-theme', theme);
+        }
+
+        applyTheme(savedTheme);
+
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            applyTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+        });
+
+        // ── Nav hamburger ──
+        document.getElementById('navToggle').addEventListener('click', () => {
+            document.getElementById('navLinks').classList.toggle('open');
+        });
+
+        // ── Close nav on link click (mobile) ──
+        document.querySelectorAll('#navLinks a').forEach(a => {
+            a.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('open');
+            });
+        });
+    </script>
+</body>
+</html>
