@@ -7,18 +7,20 @@ class Database{
     private $db_host;
     private $db_user;
     private $db_pass;
+    private $db_port;
     private $pdo;
 
-    function __construct($db_name, $db_host, $db_user, $db_pass )
+    function __construct($db_name, $db_host, $db_user, $db_pass, $db_port = 3306)
     {
         $this->db_name = $db_name;
         $this->db_host = $db_host;
         $this->db_user = $db_user;
         $this->db_pass = $db_pass;
+        $this->db_port = $db_port;
     }
     public function getPDO(){
         if($this->pdo === null){
-            $pdo = new PDO('mysql:dbname=' . $this->db_name . ';host=' . $this->db_host, $this->db_user, $this->db_pass);
+            $pdo = new PDO('mysql:dbname=' . $this->db_name . ';host=' . $this->db_host . ';port=' . $this->db_port . ';charset=utf8mb4', $this->db_user, $this->db_pass);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->pdo = $pdo;
         }
