@@ -21,7 +21,7 @@ class App{
     public function getDb(){
         $config = Config::getInstance();
         if(self::$db_instance === null){
-            self::$db_instance = new Database($config->get('db_name'), $config->get('db_host'), $config->get('db_user'), $config->get('db_pass'), $config->get('db_port') ?? ($_ENV['DB_PORT'] ?? 3306));
+            self::$db_instance = new Database($config->get('db_name'), $config->get('db_host'), $config->get('db_user'), $config->get('db_pass'), $config->get('db_port') ?? ($_ENV['DB_PORT'] ?? null));
         }
         return self::$db_instance;
     }
