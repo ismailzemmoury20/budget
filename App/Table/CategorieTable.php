@@ -14,9 +14,10 @@ class CategorieTable extends Table{
         return $req->execute([$data['nom'], $data['type']]);
     }
     public function getTotalByCategorie(): array {
-        $sql = "SELECT c.id, c.nom, c.type, COALESCE(SUM(t.montant), 0) as total FROM categorie c 
+        $sql = "SELECT c.id, c.nom, c.type, COALESCE(SUM(t.montant), 0) as total, COUNT(t.id) as nb FROM categorie c 
                 LEFT JOIN transaction t ON t.categorie_id = c.id 
-                GROUP BY c.id, c.nom, c.type";
+                GROUP BY c.id, c.nom, c.type
+                ORDER BY c.type DESC, total DESC, c.nom";
         return $this->query($sql);       
     }
     public function update(int $id, array $data) : void{

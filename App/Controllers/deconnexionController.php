@@ -15,9 +15,13 @@ class deconnexionController
     }
 
     $pageTitle = 'Déconnexion';
-    $pageIcon  = 'ri-logout-circle-r-line';
-
-    ob_start();
-        require __DIR__ . '/../../view/pages/deconnexion.php';
+    $activeNav = 'deconnexion';
+    $transactionTable = \App\App::getInstance()->getTable('transaction');
+    $totalRevenu  = (float) ($transactionTable->getTotalRevenu()->total ?? 0);
+    $totalDepense = (float) ($transactionTable->getTotalDepense()->total ?? 0);
+    $sold = round($totalRevenu - $totalDepense, 2);
+    $transactionCount = count($transactionTable->findAll());
+    $summary = $transactionTable->monthSummary((int) date('Y'), (int) date('n'));
+    require __DIR__ . '/../../view/pages/deconnexion.php';
     }
 }

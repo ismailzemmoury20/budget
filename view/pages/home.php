@@ -1,244 +1,260 @@
 <?php
+use App\Format as F;
+use App\App;
+/** @var array $summary */
+/** @var bool $isCurrentMonth */
 /** @var float $sold */
 /** @var float $totalRevenu */
 /** @var float $totalDepense */
-/** @var array $transactions */
-/** @var array $label */
-/** @var array $data */
+/** @var int $transactionCount */
+/** @var string $prev */
+/** @var string $next */
+
+$monthLabel = F::monthName($summary['month']);
+$monthTitle = ucfirst($monthLabel) . ' ' . $summary['year'];
+$income = $summary['income'];
+$expense = $summary['expense'];
+$left = $summary['left'];
+
+// Jours restants (mois en cours seulement), aujourd'hui compris
+$today = (int) date('j');
+$daysLeft = $isCurrentMonth ? $summary['days'] - $today + 1 : 0;
+$perDayLeft = ($isCurrentMonth && $left > 0) ? floor($left / $daysLeft * 100) / 100 : null;
+
+// Le constat du mois, en une phrase
+$top = $summary['perCategory'][0] ?? null;
+if ($expense == 0 && $income == 0) {
+    $finding = "Aucune opération en $monthLabel pour l'instant.";
+} elseif ($left < 0) {
+    $finding = 'Vous avez dépensé ' . F::money(-$left) . " de plus que vos revenus de $monthLabel.";
+} elseif ($top) {
+    $share = $expense > 0 ? round($top['total'] / $expense * 100) : 0;
+    $finding = $top['nom'] . ' : ' . F::money($top['total']) . ", soit $share % de vos dépenses de $monthLabel.";
+} else {
+    $finding = "Aucune dépense en $monthLabel pour l'instant.";
+}
+
+// Graphique « le mois jour par jour » : échelle ronde au-dessus du maximum
+$maxDay = max($summary['perDay'] ?: [0]);
+$steps = [10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000];
+$step = 10;
+foreach ($steps as $s) { if ($maxDay / $s <= 4) { $step = $s; break; } }
+$top4 = $step * max(1, (int) ceil(($maxDay ?: 1) / $step));
+if ($top4 <= $maxDay) $top4 += $step;
+$ticks = range(0, $top4, $step);
+
+// La plus grosse dépense du mois est annotée sur son jour
+$peakDay = $maxDay > 0 ? array_search($maxDay, $summary['perDay']) : null;
+$peakLabel = null;
+if ($peakDay) {
+    foreach ($summary['rows'] as $r) {
+        if ($r->type === 'depense' && (int) date('j', strtotime($r->date)) === $peakDay) { $peakLabel = $r->description ?: $r->categorie_nom; break; }
+    }
+}
+
+$recent = array_slice($summary['rows'], 0, 5);
+$cats = array_slice($summary['perCategory'], 0, 5);
+$maxCat = $cats ? $cats[0]['total'] : 0;
+$spentPct = $income > 0 ? min(100, $expense / $income * 100) : ($expense > 0 ? 100 : 0);
+
+// Arbre des catégories (tous mois confondus)
+$allCats = App::getInstance()->getTable('categorie')->getTotalByCategorie();
+$catRevenus = array_values(array_filter($allCats, fn($c) => $c->type === 'revenu'));
+$catDepenses = array_values(array_filter($allCats, fn($c) => $c->type === 'depense'));
+
 ob_start();
 ?>
-
-<!-- ── Stat Cards ── -->
-<div class="view-chiffre">
-    <div class="stat-card total-solde">
-        <div class="stat-icon-wrap stat-icon-solde">
-            <i class="ri-wallet-3-line"></i>
+<div class="title-row">
+    <div class="title-block">
+        <div class="month-switch">
+            <a class="btn btn-ghost btn-icon" href="index.php?p=home&amp;m=<?= $prev ?>" aria-label="Mois précédent"><svg class="i" aria-hidden="true"><use href="#i-left"/></svg></a>
+            <h1><?= $monthTitle ?></h1>
+            <a class="btn btn-ghost btn-icon" href="index.php?p=home&amp;m=<?= $next ?>" aria-label="Mois suivant"><svg class="i" aria-hidden="true"><use href="#i-right"/></svg></a>
         </div>
-        <div class="stat-info">
-            <span class="stat-label">SOLDE ACTUEL</span>
-            <h4 class="stat-value <?= $sold < 0 ? 'val-red' : 'val-green' ?>">
-                <?= number_format($sold, 2, ',', ' ') ?> €
-            </h4>
-        </div>
+        <p class="title-sub"><?= F::e($finding) ?></p>
     </div>
-    <div class="stat-card total-revenus">
-        <div class="stat-icon-wrap stat-icon-revenu">
-            <i class="ri-arrow-up-circle-line"></i>
-        </div>
-        <div class="stat-info">
-            <span class="stat-label">TOTAL REVENUS</span>
-            <h4 class="stat-value val-green">
-                <?= number_format($totalRevenu, 2, ',', ' ') ?> €
-            </h4>
-        </div>
-    </div>
-    <div class="stat-card total-depense">
-        <div class="stat-icon-wrap stat-icon-depense">
-            <i class="ri-arrow-down-circle-line"></i>
-        </div>
-        <div class="stat-info">
-            <span class="stat-label">TOTAL DÉPENSES</span>
-            <h4 class="stat-value val-red">
-                <?= number_format($totalDepense, 2, ',', ' ') ?> €
-            </h4>
-        </div>
+    <div class="title-actions">
+        <a href="index.php?p=home&amp;export=csv" class="btn btn-secondary"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Exporter en CSV</a>
+        <a href="index.php?p=add" class="btn btn-primary"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Nouvelle transaction</a>
     </div>
 </div>
 
-<!-- ── Bottom grid : chart + recent transactions ── -->
-<div class="dashboard-grid">
-    <div class="chart-container">
-        <p class="chart-title">Répartition</p>
-        <canvas id="myChart"></canvas>
-    </div>
-
-    <div class="recent-container">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
-            <p class="chart-title" style="margin:0;">Transactions récentes</p>
-            <a href="?p=home&export=csv" class="btn-export-csv" id="csvExportBtn" title="Télécharger toutes les transactions au format CSV (compatible Excel)">
-                <span class="btn-export-inner">
-                    <i class="ri-file-excel-2-line btn-export-icon"></i>
-                    <span class="btn-export-label">Exporter CSV</span>
-                    <span class="btn-export-badge"><?= count($transactions) ?></span>
-                </span>
-            </a>
+<div class="home-grid">
+    <!-- Colonne fixe : le solde du carnet et ses catégories -->
+    <section class="card ledger" aria-labelledby="ledger-title">
+        <div class="ledger-head">
+            <h2 id="ledger-title" class="card-title">Solde du carnet</h2>
+            <p class="ledger-balance num <?= $sold < 0 ? 'is-negative' : '' ?>"><?= F::money($sold) ?></p>
+            <p class="meta"><?= $transactionCount ?> opération<?= $transactionCount > 1 ? 's' : '' ?> enregistrée<?= $transactionCount > 1 ? 's' : '' ?></p>
         </div>
-        <?php if (empty($transactions)): ?>
-            <p class="no-data">Aucune transaction enregistrée.</p>
-        <?php else: ?>
-            <ul class="recent-list">
-                <?php foreach (array_slice(array_reverse($transactions), 0, 6) as $tx): ?>
-                <li class="recent-item">
-                    <div class="recent-icon <?= $tx->type === 'revenu' ? 'icon-revenu' : 'icon-depense' ?>">
-                        <i class="<?= $tx->type === 'revenu' ? 'ri-arrow-up-line' : 'ri-arrow-down-line' ?>"></i>
-                    </div>
-                    <div class="recent-info">
-                        <span class="recent-desc"><?= htmlspecialchars($tx->description ?: 'Sans description') ?></span>
-                        <span class="recent-date"><?= date('d/m/Y', strtotime($tx->date)) ?></span>
-                    </div>
-                    <span class="recent-amount <?= $tx->type === 'revenu' ? 'val-green' : 'val-red' ?>">
-                        <?= $tx->type === 'revenu' ? '+' : '-' ?><?= number_format($tx->montant, 2, ',', ' ') ?> €
-                    </span>
-                    <div class="recent-actions">
-                        <button class="btn-action btn-edit-tx"
-                                data-bs-toggle="modal"
-                                data-bs-target="#editTransactionModal"
-                                data-id="<?= $tx->id ?>"
-                                data-montant="<?= $tx->montant ?>"
-                                data-description="<?= htmlspecialchars($tx->description) ?>"
-                                data-type="<?= $tx->type ?>"
-                                data-date="<?= $tx->date ?>">
-                            <i class="ri-edit-line"></i>
-                        </button>
-                        <button class="btn-action btn-delete-tx"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteTransactionModal"
-                                data-id="<?= $tx->id ?>"
-                                data-desc="<?= htmlspecialchars($tx->description) ?>">
-                            <i class="ri-delete-bin-line"></i>
-                        </button>
-                    </div>
-                </li>
+        <div class="tree">
+            <div class="tree-group">
+                <div class="tree-row tree-head"><span>Revenus</span><span class="num amount-in"><?= F::money($totalRevenu, true) ?></span></div>
+                <?php if (!$catRevenus): ?>
+                    <a class="tree-empty" href="index.php?p=categorie">+ Ajouter une catégorie de revenus</a>
+                <?php endif; ?>
+                <?php foreach ($catRevenus as $c): ?>
+                    <div class="tree-row"><span class="tree-name"><span class="dot <?= F::tint($c->id) ?>"></span><?= F::e($c->nom) ?></span><span class="num"><?= $c->total > 0 ? F::money($c->total) : '<span class="dash">—</span>' ?></span></div>
                 <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
-    </div>
-</div>
-
-<style>
-.btn-export-csv {
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-    margin-top: 16px;
-    border-radius: 10px;
-    background: linear-gradient(135deg, #1a7a55 0%, #1D9E75 100%);
-    color: #fff;
-    font-weight: 600;
-    font-size: 0.88rem;
-    letter-spacing: 0.02em;
-    padding: 0;
-    box-shadow: 0 2px 10px rgba(29,158,117,0.18);
-    transition: box-shadow 0.18s, transform 0.15s, opacity 0.15s;
-    overflow: hidden;
-    position: relative;
-}
-.btn-export-csv:hover {
-    box-shadow: 0 4px 18px rgba(29,158,117,0.32);
-    transform: translateY(-1px);
-    color: #fff;
-    opacity: 0.95;
-}
-.btn-export-csv:active {
-    transform: translateY(0px) scale(0.98);
-    box-shadow: 0 1px 6px rgba(29,158,117,0.2);
-}
-.btn-export-inner {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px 10px 14px;
-}
-.btn-export-icon {
-    font-size: 1.15rem;
-    flex-shrink: 0;
-}
-.btn-export-badge {
-    background: rgba(255,255,255,0.22);
-    border-radius: 20px;
-    padding: 1px 8px;
-    font-size: 0.78rem;
-    font-weight: 700;
-    line-height: 1.6;
-    margin-left: 2px;
-}
-.btn-export-csv.loading .btn-export-icon::before {
-    content: "\eb4e";
-    animation: spin 0.7s linear infinite;
-    display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-</style>
-
-<script>
-document.getElementById('csvExportBtn').addEventListener('click', function() {
-    this.classList.add('loading');
-    this.querySelector('.btn-export-label').textContent = 'Préparation…';
-    setTimeout(() => {
-        this.classList.remove('loading');
-        this.querySelector('.btn-export-label').textContent = 'Exporter CSV';
-    }, 2500);
-});
-</script>
-
-<!-- Modal Modifier transaction -->
-<div class="modal fade" id="editTransactionModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content tx-modal-content">
-            <div class="modal-header tx-modal-header">
-                <h5 class="modal-title tx-modal-title">Modifier la transaction</h5>
-                <button type="button" class="btn-close tx-btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body tx-modal-body">
-                <form method="POST" action="index.php?p=home">
-                    <input type="hidden" name="action" value="edit">
-                    <input type="hidden" name="id" id="edit_tx_id">
-                    <div class="tx-field">
-                        <label>MONTANT</label>
-                        <input type="number" step="0.01" name="montant" id="edit_tx_montant" class="tx-input" required>
-                    </div>
-                    <div class="tx-field">
-                        <label>DESCRIPTION</label>
-                        <input type="text" name="description" id="edit_tx_description" class="tx-input">
-                    </div>
-                    <div class="tx-field">
-                        <label>TYPE</label>
-                        <select name="type" id="edit_tx_type" class="tx-input">
-                            <option value="revenu">Revenu</option>
-                            <option value="depense">Dépense</option>
-                        </select>
-                    </div>
-                    <div class="tx-field">
-                        <label>DATE</label>
-                        <input type="date" name="date" id="edit_tx_date" class="tx-input" required>
-                    </div>
-                    <button type="submit" class="tx-btn-save">Enregistrer</button>
-                </form>
+            <div class="tree-group">
+                <div class="tree-row tree-head"><span>Dépenses</span><span class="num"><?= F::money($totalDepense) ?></span></div>
+                <?php if (!$catDepenses): ?>
+                    <a class="tree-empty" href="index.php?p=categorie">+ Ajouter une catégorie de dépenses</a>
+                <?php endif; ?>
+                <?php foreach ($catDepenses as $c): ?>
+                    <div class="tree-row"><span class="tree-name"><span class="dot <?= F::tint($c->id) ?>"></span><?= F::e($c->nom) ?></span><span class="num"><?= $c->total > 0 ? F::money($c->total) : '<span class="dash">—</span>' ?></span></div>
+                <?php endforeach; ?>
             </div>
         </div>
-    </div>
-</div>
+        <a class="card-link" href="index.php?p=categorie">Gérer les catégories <svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </section>
 
-<!-- Modal Supprimer transaction -->
-<div class="modal fade" id="deleteTransactionModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content tx-modal-content tx-modal-delete">
-            <div class="modal-header tx-modal-header">
-                <h5 class="modal-title tx-modal-title-delete">Supprimer la transaction</h5>
-                <button type="button" class="btn-close tx-btn-close" data-bs-dismiss="modal"></button>
+    <div class="month-grid">
+        <!-- La question de l'écran : combien reste-t-il ce mois-ci ? -->
+        <section class="card month span-2" aria-labelledby="month-title">
+            <div class="card-head">
+                <h2 id="month-title" class="card-title">Reste en <?= $monthLabel ?></h2>
+                <span class="meta">du 1<sup>er</sup> au <?= $summary['days'] ?> <?= $monthLabel ?></span>
             </div>
-            <div class="modal-body tx-modal-body">
-                <p class="tx-delete-msg">Êtes-vous sûr de vouloir supprimer <strong id="delete_tx_desc"></strong> ?</p>
-                <p class="tx-delete-warn">Cette action est irréversible.</p>
-                <form method="POST" action="index.php?p=home">
-                    <input type="hidden" name="action" value="delete">
-                    <input type="hidden" name="id" id="delete_tx_id">
-                    <div class="tx-btn-row">
-                        <button type="button" class="tx-btn-cancel" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="tx-btn-danger">Supprimer</button>
+            <div class="month-figures">
+                <div class="lead-figure">
+                    <?php [$int, $cents] = F::moneyParts($left); ?>
+                    <p class="lead num <?= $left < 0 ? 'is-negative' : '' ?>"><?= $int ?><span class="cents"><?= $cents ?></span></p>
+                    <p class="meta">
+                        <?php if ($perDayLeft !== null): ?>
+                            soit <span class="num ink"><?= F::money($perDayLeft) ?></span> par jour pendant les <?= $daysLeft ?> jours qui restent
+                        <?php elseif ($isCurrentMonth && $left <= 0 && ($income > 0 || $expense > 0)): ?>
+                            dépenses supérieures aux revenus du mois
+                        <?php else: ?>
+                            revenus moins dépenses du mois
+                        <?php endif; ?>
+                    </p>
+                </div>
+                <dl class="pair">
+                    <div><dt>Revenus du mois</dt><dd class="num amount-in"><?= F::money($income, true) ?></dd></div>
+                    <div><dt>Dépenses du mois</dt><dd class="num"><?= F::money($expense) ?></dd></div>
+                </dl>
+            </div>
+            <div class="gauge" role="img" aria-label="<?= round($spentPct) ?> % des revenus du mois déjà dépensés">
+                <div class="gauge-track"><div class="gauge-fill" style="width: <?= round($spentPct, 1) ?>%"></div></div>
+                <div class="gauge-legend"><span><span class="swatch swatch-spent"></span><?= round($spentPct) ?> % des revenus dépensés</span><span class="num"><?= F::money($expense) ?> sur <?= F::money($income) ?></span></div>
+            </div>
+
+            <figure class="days" aria-labelledby="days-title">
+                <figcaption id="days-title" class="days-title">Dépenses jour par jour</figcaption>
+                <div class="days-plot" style="--top: <?= $top4 ?>">
+                    <div class="days-grid" aria-hidden="true">
+                        <?php foreach (array_reverse($ticks) as $t): ?>
+                            <span class="tick" style="--v: <?= $t ?>"><span class="num"><?= number_format($t, 0, ',', "\u{202F}") ?></span></span>
+                        <?php endforeach; ?>
                     </div>
-                </form>
+                    <div class="days-bars">
+                        <?php foreach ($summary['perDay'] as $d => $v): ?>
+                            <div class="day<?= $isCurrentMonth && $d === $today ? ' is-today' : '' ?><?= $isCurrentMonth && $d > $today ? ' is-future' : '' ?>" style="--v: <?= round($v, 2) ?>">
+                                <span class="bar" title="<?= $d ?> <?= $monthLabel ?> : <?= F::money($v) ?>"></span>
+                                <?php if ($d === $peakDay && $peakLabel): ?><span class="peak"><span class="peak-name"><?= F::e($peakLabel) ?> </span><span class="num"><?= F::money($v) ?></span></span><?php endif; ?>
+                                <?php $isToday = $isCurrentMonth && $d === $today; $nearToday = $isCurrentMonth && !$isToday && abs($d - $today) <= 2; ?>
+                                <?php if ($isToday || (!$nearToday && ($d === 1 || $d % 5 === 0))): ?><span class="dlabel num"><?= $isCurrentMonth && $d === $today ? "Aujourd'hui" : $d ?></span><?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </figure>
+        </section>
+
+        <!-- Les dernières opérations -->
+        <section class="card" aria-labelledby="recent-title">
+            <div class="card-head">
+                <h2 id="recent-title" class="card-title">Dernières opérations</h2>
+                <span class="meta"><?= count($summary['rows']) ?> en <?= $monthLabel ?></span>
             </div>
-        </div>
+            <?php if (!$recent): ?>
+                <div class="empty">Aucune opération en <?= $monthLabel ?>. <a href="index.php?p=add">Ajouter la première</a></div>
+            <?php else: ?>
+                <ul class="rows">
+                    <?php foreach ($recent as $tx): ?>
+                        <li class="row">
+                            <span class="tile <?= F::tint($tx->categorie_id) ?>" aria-hidden="true"><?= F::initial($tx->categorie_nom ?? $tx->description) ?></span>
+                            <span class="row-main">
+                                <span class="row-title"><?= F::e($tx->description ?: 'Sans description') ?></span>
+                                <span class="row-sub"><?= F::e($tx->categorie_nom ?? 'Sans catégorie') ?></span>
+                            </span>
+                            <span class="row-figure">
+                                <span class="num <?= $tx->type === 'revenu' ? 'amount-in' : '' ?>"><?= $tx->type === 'revenu' ? F::money($tx->montant, true) : F::money($tx->montant) ?></span>
+                                <span class="row-sub"><?= F::shortDate($tx->date) ?></span>
+                            </span>
+                            <span class="row-actions">
+                                <button type="button" class="btn btn-ghost btn-icon" aria-label="Modifier « <?= F::e($tx->description ?: 'Sans description') ?> »"
+                                    data-open="editTx" data-id="<?= $tx->id ?>" data-montant="<?= $tx->montant ?>" data-description="<?= F::e($tx->description) ?>" data-type="<?= $tx->type ?>" data-date="<?= $tx->date ?>"><svg class="i" aria-hidden="true"><use href="#i-pencil"/></svg></button>
+                                <button type="button" class="btn btn-ghost btn-icon" aria-label="Supprimer « <?= F::e($tx->description ?: 'Sans description') ?> »"
+                                    data-open="deleteTx" data-id="<?= $tx->id ?>" data-label="<?= F::e($tx->description ?: 'cette opération') ?>"><svg class="i" aria-hidden="true"><use href="#i-trash"/></svg></button>
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </section>
+
+        <!-- Où part l'argent ce mois-ci -->
+        <section class="card" aria-labelledby="cats-title">
+            <div class="card-head">
+                <h2 id="cats-title" class="card-title">Dépenses par catégorie</h2>
+                <span class="meta"><?= $monthLabel ?></span>
+            </div>
+            <?php if (!$cats): ?>
+                <div class="empty">Aucune dépense en <?= $monthLabel ?>.</div>
+            <?php else: ?>
+                <ul class="rows">
+                    <?php foreach ($cats as $c): ?>
+                        <li class="row">
+                            <span class="tile <?= F::tint($c['id']) ?>" aria-hidden="true"><?= F::initial($c['nom']) ?></span>
+                            <span class="row-main">
+                                <span class="row-title"><?= F::e($c['nom']) ?></span>
+                                <span class="share" aria-hidden="true"><span style="width: <?= $maxCat > 0 ? round($c['total'] / $maxCat * 100, 1) : 0 ?>%"></span></span>
+                            </span>
+                            <span class="row-figure">
+                                <span class="num"><?= F::money($c['total']) ?></span>
+                                <span class="row-sub num"><?= $expense > 0 ? round($c['total'] / $expense * 100) : 0 ?> %</span>
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        </section>
     </div>
 </div>
 
-<script>
-    const chartLabels = <?= json_encode($label) ?>;
-    const chartData   = <?= json_encode($data) ?>;
-</script>
-<script src="js/home.js"></script>
+<dialog id="editTx" class="dialog" aria-labelledby="editTx-title">
+    <form method="POST" action="index.php?p=home&amp;m=<?= sprintf('%04d-%02d', $summary['year'], $summary['month']) ?>" class="dialog-body">
+        <h2 id="editTx-title" class="card-title">Modifier l'opération</h2>
+        <input type="hidden" name="action" value="edit">
+        <input type="hidden" name="id" data-fill="id">
+        <div class="field"><label for="edit-montant">Montant (€)</label><input class="input num" type="number" step="0.01" min="0" id="edit-montant" name="montant" data-fill="montant" required></div>
+        <div class="field"><label for="edit-description">Description</label><input class="input" type="text" id="edit-description" name="description" data-fill="description"></div>
+        <div class="field-pair">
+            <div class="field"><label for="edit-type">Type</label><select class="input" id="edit-type" name="type" data-fill="type"><option value="depense">Dépense</option><option value="revenu">Revenu</option></select></div>
+            <div class="field"><label for="edit-date">Date</label><input class="input" type="date" id="edit-date" name="date" data-fill="date" required></div>
+        </div>
+        <div class="dialog-actions">
+            <button type="button" class="btn btn-secondary" data-close>Annuler</button>
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog id="deleteTx" class="dialog" aria-labelledby="deleteTx-title">
+    <form method="POST" action="index.php?p=home&amp;m=<?= sprintf('%04d-%02d', $summary['year'], $summary['month']) ?>" class="dialog-body">
+        <h2 id="deleteTx-title" class="card-title">Supprimer « <span data-fill="label"></span> » ?</h2>
+        <p class="hint">L'opération disparaît du carnet et le solde est recalculé. Cette action ne peut pas être annulée.</p>
+        <input type="hidden" name="action" value="delete">
+        <input type="hidden" name="id" data-fill="id">
+        <div class="dialog-actions">
+            <button type="button" class="btn btn-secondary" data-close>Annuler</button>
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+        </div>
+    </form>
+</dialog>
 <?php
 $content = ob_get_clean();
 require __DIR__ . '/../template/layout.php';
-?>

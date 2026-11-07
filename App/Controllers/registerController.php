@@ -23,7 +23,9 @@ class registerController
             if(empty($username)) $error="Nom d'utilisateur laissé vide!";
             elseif(empty($email)) $error="Le mail laissé vide!";
             elseif(empty($password)) $error="Le mot de passe laissé vide!";
+            elseif(!filter_var($email, FILTER_VALIDATE_EMAIL)) $error="Cette adresse e-mail n'est pas valide.";
             elseif($password!=$passwordVerified) $error="Mots de passe non identiques!";
+            elseif($userTable->getByUsername($email)) $error="Un compte existe déjà avec cette adresse e-mail.";
             else {
                 $userTable->setInfosRegister([
                 'username' => $username,
@@ -35,6 +37,7 @@ class registerController
             require __DIR__ . '/../../App/Mail/welcome.php';
             $templateHtml = ob_get_clean();
 
+            try {
             $mail = new PHPMailer(true);
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com';
@@ -50,6 +53,10 @@ class registerController
             $mail->Subject = 'Bienvenue sur BudgetTracker !';
             $mail->Body    = $templateHtml;
             $mail->send();
+            } catch (\Throwable $e) {
+                // L'e-mail de bienvenue est un bonus : le compte est créé même s'il ne part pas.
+                error_log('E-mail de bienvenue non envoyé : ' . $e->getMessage());
+            }
             header('Location: index.php?p=login');
             exit();
             }

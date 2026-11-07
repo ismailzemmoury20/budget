@@ -1,19 +1,18 @@
+<?php
+/** @var string|null $pageTitle */
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Budget Personnel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../public/css/home.css">
-    <link rel="stylesheet" href="../public/css/add.css">
-    <link rel="stylesheet" href="../public/css/deconnexion.css">
-    <link rel="stylesheet" href="../public/css/categorie.css">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title><?= htmlspecialchars($pageTitle ?? 'Budget') ?> · Budget</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='7' fill='%231d5fd6'/%3E%3Crect x='6' y='7' width='12' height='2.2' rx='1.1' fill='white'/%3E%3Crect x='6' y='11' width='9' height='2.2' rx='1.1' fill='white'/%3E%3Crect x='6' y='15' width='6' height='2.2' rx='1.1' fill='white'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/tokens.css">
+    <link rel="stylesheet" href="css/app.css">
 </head>
-<body>
+<body class="app">
+<?php require __DIR__ . '/icons.php'; ?>

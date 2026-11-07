@@ -2,6 +2,9 @@
 session_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Charge les variables du fichier .env (à la racine du projet) dans $_ENV
+Dotenv\Dotenv::createImmutable(dirname(__DIR__))->safeLoad();
+
 $availableRoutes = [
     'landing'       => 'landingController',
     'home'          => 'homeController',

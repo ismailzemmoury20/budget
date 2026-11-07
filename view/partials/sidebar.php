@@ -1,35 +1,43 @@
-<aside class="sidebar">
-    <a href="index.php" class="sidebar-logo" style="text-decoration: none; color: inherit;">
-        <div class="logo-icon">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect width="22" height="22" rx="7" fill="url(#logoGrad)"/>
-                <path d="M6 7h5.5a2.5 2.5 0 0 1 0 5H6V7Z" fill="white" fill-opacity="0.95"/>
-                <path d="M6 12h6a2.5 2.5 0 0 1 0 5H6v-5Z" fill="white" fill-opacity="0.7"/>
-                <defs>
-                    <linearGradient id="logoGrad" x1="0" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
-                        <stop offset="0%" stop-color="#908aff"/>
-                        <stop offset="100%" stop-color="#6c63ff"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-        </div>
-        <span class="logo-text">Budget</span>
+<?php
+/** @var string|null $activeNav */
+$user = $_SESSION['user'] ?? null;
+$userName = $user->username ?? 'Mon compte';
+$userMail = $user->email ?? '';
+$nav = [
+    'home'      => ['index.php?p=home', 'home', 'Tableau de bord'],
+    'add'       => ['index.php?p=add', 'plus', 'Nouvelle transaction'],
+    'categorie' => ['index.php?p=categorie', 'tag', 'Catégories'],
+];
+?>
+<aside class="sidebar" id="sidebar" aria-label="Navigation">
+    <a href="index.php?p=home" class="brand">
+        <?php require __DIR__ . '/logo.php'; ?>
+        <span>Budget</span>
     </a>
-    <nav class="sidebar-nav">
-        <a href="index.php">
-            <i class="ri-dashboard-line"></i> Tableau de bord
-        </a>
-        <a href="index.php?p=add">
-            <i class="ri-add-circle-line"></i> Ajouter une transaction
-        </a>
-        <a href="index.php?p=categorie">
-            <i class="ri-pie-chart-line"></i> Catégories
-        </a>
-        <a href="index.php?p=deconnexion">
-            <i class="ri-logout-circle-r-line"></i> Déconnexion
+    <div class="scope">
+        <span class="scope-label">Carnet de</span>
+        <span class="scope-name"><?= htmlspecialchars($userName) ?></span>
+    </div>
+    <nav class="nav">
+        <?php foreach ($nav as $key => [$href, $icon, $label]): ?>
+            <a href="<?= $href ?>" class="nav-item<?= ($activeNav ?? '') === $key ? ' is-active' : '' ?>"<?= ($activeNav ?? '') === $key ? ' aria-current="page"' : '' ?>>
+                <svg class="i" aria-hidden="true"><use href="#i-<?= $icon ?>"/></svg><?= $label ?>
+            </a>
+        <?php endforeach; ?>
+        <a href="index.php?p=home&amp;export=csv" class="nav-item">
+            <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Exporter en CSV
         </a>
     </nav>
-    <div class="sidebar-footer">
-        Budget Personnel &copy; <?= date('Y') ?>
+    <div class="sidebar-foot">
+        <div class="user-row">
+            <span class="avatar tint-0" aria-hidden="true"><?= htmlspecialchars(mb_strtoupper(mb_substr($userName, 0, 1))) ?></span>
+            <span class="user-text">
+                <span class="user-name"><?= htmlspecialchars($userName) ?></span>
+                <span class="user-mail"><?= htmlspecialchars($userMail) ?></span>
+            </span>
+        </div>
+        <a href="index.php?p=deconnexion" class="nav-item<?= ($activeNav ?? '') === 'deconnexion' ? ' is-active' : '' ?>">
+            <svg class="i" aria-hidden="true"><use href="#i-logout"/></svg>Se déconnecter
+        </a>
     </div>
 </aside>

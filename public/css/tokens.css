@@ -1,0 +1,90 @@
+/* Budget — jetons partagés (application + site)
+   Style « pastel consumer » : fond gris clair, cartes blanches, une teinte pâle par catégorie
+   avec l'encre sombre de la même teinte. Pas de dégradé, pas d'ombre au repos. */
+:root {
+  --ground: #f3f5f7;
+  --surface: #ffffff;
+  --raised: #f2f8fd;
+  --active: #e7eaee;
+  --border: #e6e6e6;
+  --rule: #f0f1f3;
+  --control: #d6d9dd;
+  --text: #1b1d1f;
+  --muted: #5c6064;
+  --accent: #1d5fd6;
+  --accent-hover: #174fb4;
+  --accent-soft: #dcf1ff;
+  --accent-ink: #0a3a80;
+  --positive: #2f7a45;
+  --negative: #c41c29;
+  --warning: #92400e;
+  --pill-positive-bg: #dcfae5; --pill-positive-ink: #04250e;
+  --pill-negative-bg: #ffedea; --pill-negative-ink: #831c1e;
+  --pill-neutral-bg: #eef1f4;  --pill-neutral-ink: #3a3d40;
+
+  --radius-card: 20px;
+  --radius-inner: 10px;
+  --radius-control: 10px;
+  --radius-chip: 8px;
+  --gap: 24px;
+  --pad: 24px;
+  --control-height: 40px;
+
+  --font: "Manrope", Inter, system-ui, sans-serif;
+  --fs-title: 28px;
+  --fs-section: 20px;
+  --fs-kpi: 32px;
+  --fs-body: 16px;
+  --fs-small: 14px;
+
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --t-hover: 200ms;
+  --t-press: 120ms;
+}
+
+/* Teintes de catégorie : fond pâle + encre de la même teinte (≥ 4.5:1) */
+.tint-0 { --tint-bg: #dcf1ff; --tint-ink: #0a3a80; }
+.tint-1 { --tint-bg: #dcfae5; --tint-ink: #14532d; }
+.tint-2 { --tint-bg: #fff0d4; --tint-ink: #7a3e00; }
+.tint-3 { --tint-bg: #d8f2f4; --tint-ink: #0f4c55; }
+.tint-4 { --tint-bg: #ffe3e7; --tint-ink: #8a1f35; }
+.tint-5 { --tint-bg: #eceff2; --tint-ink: #33383d; }
+.tint-none { --tint-bg: #eceff2; --tint-ink: #5c6064; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; font-family: var(--font); font-size: var(--fs-body); line-height: 1.5; color: var(--text); background: var(--ground); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, p { margin: 0; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+img, svg { display: block; max-width: 100%; }
+.num { font-variant-numeric: tabular-nums; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+::selection { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* Boutons : une seule forme pour tout le produit */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--control-height); padding: 0 16px; border-radius: var(--radius-control); border: 1px solid transparent; font-size: var(--fs-small); font-weight: 600; text-decoration: none; cursor: pointer; white-space: nowrap; transition: background-color var(--t-hover) ease, border-color var(--t-hover) ease, color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--text); color: #fff; }
+.btn-primary:hover { background: #33373b; }
+.btn-secondary { background: var(--surface); border-color: var(--control); color: var(--text); }
+.btn-secondary:hover { border-color: #b4b9bf; background: #fafbfc; }
+.btn-ghost { background: transparent; color: var(--text); padding: 0 10px; }
+.btn-ghost:hover { background: var(--active); }
+.btn-danger { background: var(--negative); color: #fff; }
+.btn-danger:hover { background: #a31621; }
+.btn-lg { height: 52px; padding: 0 24px; font-size: var(--fs-body); }
+
+/* Champs */
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field > label, .field > .label { font-size: var(--fs-small); font-weight: 500; }
+.input { height: var(--control-height); width: 100%; padding: 0 12px; border: 1px solid var(--control); border-radius: var(--radius-control); background: var(--surface); transition: border-color var(--t-hover) ease; }
+.input:hover { border-color: #b4b9bf; }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+textarea.input { height: auto; padding: 10px 12px; resize: vertical; }
+.input::placeholder { color: #6b6b6b; }
+.hint { font-size: var(--fs-small); color: var(--muted); }
+.notice { padding: 12px 16px; border-radius: var(--radius-inner); font-size: var(--fs-small); }
+.notice-error { background: var(--pill-negative-bg); color: var(--pill-negative-ink); }
+.notice-success { background: var(--pill-positive-bg); color: var(--pill-positive-ink); }

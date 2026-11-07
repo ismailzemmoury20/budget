@@ -1,0 +1,1 @@
+<svg class="mark" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="7" fill="#1d5fd6"/><rect x="6" y="7" width="12" height="2.2" rx="1.1" fill="#fff"/><rect x="6" y="11" width="9" height="2.2" rx="1.1" fill="#fff"/><rect x="6" y="15" width="6" height="2.2" rx="1.1" fill="#fff"/></svg>
